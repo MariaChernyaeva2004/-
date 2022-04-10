@@ -1,0 +1,93 @@
+import copy
+N = int(input("количество точек: "))
+print('матрица смежности: ')
+lst = []
+for _ in range(N):
+    elem = list(map(int, input().split(' ')))
+    lst.append(elem)
+
+min_tree = [[0 for _ in range(N)] for _ in range(N)]
+
+weights = []
+confirm_points = []
+wrong_pairs = []
+pairs = []
+lst_true = []
+st_fin_old = []
+a = 0
+
+
+def ways(start, finish):
+    global a, st_fin_old, min_tree_exp, start_old
+    if a == 0:
+        st_fin_old.extend([float('inf'), float('inf')])
+        a += 1
+    i = 0
+    while i != N:
+        if start == finish:
+            lst_true.clear()
+            lst_true.append(True)
+            st_fin_old.clear()
+            return None
+        elif start - 1 == st_fin_old[1] and i == st_fin_old[0]:
+            i += 1
+        elif min_tree_exp[start - 1][i] != 0:
+            st_fin_old.clear()
+            st_fin_old.extend([start - 1, i])
+            print(min_tree_exp[start - 1].index(min_tree_exp[start - 1][i]) + 1)
+            start = min_tree_exp[start - 1].index(min_tree_exp[start - 1][i]) + 1
+            i = 0
+        elif min_tree_exp[start - 1][N - 1] == 0 and i == N - 1:
+            if len(min_tree_exp):
+                lst_true.clear()
+                lst_true.append(False)
+                return None
+        else:
+            i += 1
+
+
+for i in range(N):
+    for j in range(N):
+        if lst[i][j]:
+            weights.append(lst[i][j])
+weights = sorted(list(set(weights)))
+
+for elem in weights:
+    for i in range(N):
+        for j in range(N):
+            if lst[i][j] == elem:
+                if i+1 not in confirm_points and j+1 not in confirm_points:
+                    min_tree[i][j] = elem
+                    confirm_points.extend([i+1, j+1])
+                    pairs.append((i+1, j+1))
+                elif (i+1, j+1) in wrong_pairs:
+                    continue
+                elif i+1 in confirm_points and j+1 in confirm_points:
+                    if (j+1, i+1) in pairs:
+                        min_tree[i][j] = elem
+                    else:
+                        min_tree_exp = copy.deepcopy(min_tree)
+                        start_old = i + 1
+                        ways(i + 1, j + 1)
+                        print(lst_true)
+                        if not all(lst_true):
+                            min_tree[i][j] = elem
+                            pairs.append((i + 1, j + 1))
+                            lst_true.clear()
+                            st_fin_old.clear()
+                            a = 0
+                        else:
+                            wrong_pairs.append((j+1, i+1))
+                            st_fin_old.clear()
+                            a = 0
+                elif i+1 in confirm_points and j+1 not in confirm_points:
+                    min_tree[i][j] = elem
+                    confirm_points.append(j + 1)
+                    pairs.append((i + 1, j + 1))
+                elif i+1 not in confirm_points and j+1 in confirm_points:
+                    min_tree[i][j] = elem
+                    confirm_points.append(i + 1)
+                    pairs.append((i + 1, j + 1))
+
+for elem in min_tree:
+    print(*elem)
