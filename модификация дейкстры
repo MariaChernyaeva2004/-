@@ -1,0 +1,67 @@
+import copy
+
+N = int(input("количество точек: "))
+print('матрица смежности: ')
+lst = []
+for _ in range(N):
+    elem = list(map(int, input().split(' ')))
+    lst.append(elem)
+start = int(input('номер стартовой точки: '))
+finish = int(input('номер конечной точки: '))
+
+mark_dct = {}
+for i in range(1, N+1):
+    if i == start:
+        mark_dct[i] = 0
+    else:
+        mark_dct[i] = float('inf')
+mark = start
+lst_mark = [mark]
+ways = []
+
+while len(lst_mark) < N:
+    next_mark = []
+    for j in range(len(lst)):
+        if lst[mark - 1][j] != 0:
+            if lst[mark - 1][j] + mark_dct[mark] < mark_dct[j + 1]:
+                mark_dct[j + 1] = lst[mark - 1][j] + mark_dct[mark]
+    for key in mark_dct.keys():
+        if key not in lst_mark:
+            next_mark.append((key, mark_dct[key]))
+    next_mark.sort(key=lambda x: x[1])
+    mark = next_mark[0][0]
+    lst_mark.append(mark)
+
+for i in range(N):
+    for j in range(len(lst[i])):
+        if lst[i][j]:
+            ways.append([i + 1, j + 1])
+
+for elem in ways:
+    for i in range(len(ways)):
+        if elem[0] == start and elem != ways[i] and elem[-1] == ways[i][0]:
+            item = elem.copy()
+            item.extend(ways[i])
+            for a in range(1, len(item) + 1):
+                if item[a] == item[a - 1]:
+                    item.remove(item[a])
+                    break
+            ways.append(item)
+
+ways = [elem for elem in ways if elem[0] == start and elem[-1] == finish]
+ways_count = list(map(lambda x: x, copy.deepcopy(ways)))
+
+for i in range(len(ways_count)):
+    a = i
+    sum_r = 0
+    for j in ways_count[i]:
+        sum_r += lst[a][j-1]
+        a = j - 1
+    ways_count[i] = sum_r
+
+right_way_index = ways_count.index(mark_dct[finish])
+right_way = ' - '.join(list(map(str, ways[right_way_index])))
+
+print()
+print(f'Длина наименьшего пути: {mark_dct[finish]}')
+print(f'Кратчайший путь: {right_way}')
